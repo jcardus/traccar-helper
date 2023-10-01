@@ -1,56 +1,62 @@
 <template>
   <div>
-    user: {{this.session && this.session.email}} {{this.session && this.session.id}}
-    <br/>
-    <p>
-      userid: <input type="text" v-model="userId">
-      <button @click="devicesByUser">Filter</button>
-    </p>
-    {{geofences.length}} geofences:
-    <button @click="showGeofences=!showGeofences">{{showGeofences?'Hide':'Show'}}</button>
-    <button @click="selectedGeofences = geofences.map(g => g.id)">Select all</button>
-    <ol v-if="showGeofences">
-      <li v-for="d of geofences" :key="d.id" @click="toggleSelectedGeofence(d.id)"
-          :style="selectedGeofences.includes(d.id)?'background-color: yellow':''">{{d.name}} {{d.attributes}}</li>
-    </ol>
-    <input @click="removeGeofences" :value="`Delete selected (${selectedGeofences.length})`" type="button">
-    <p></p>
-    <input @click="removeDuplicated" value="Delete duplicated" type="button">
-    <p></p>
-    Add Geofence:
-    <input ref="file" type="file" @change="addGeofence">
-    <p></p>
-    {{groups.length}} groups:
-    <button @click="showGroups=!showGroups">{{showGroups?'Hide':'Show'}}</button>
-    <ol v-if="showGroups">
-      <li v-for="d of groups" :key="d.id"
-          :style="selectedGroups.includes(d.id)?'background-color: yellow':''">group {{d}}</li>
-    </ol>
-    <p></p>
-    {{devices.length}} devices:
-    <button @click="showDevices=!showDevices">{{showDevices?'Hide':'Show'}}</button>
-    <button @click="getComputed">Get Computed</button>
-    <ol v-if="showDevices">
-      <li v-for="d of devices" :key="d.id">{{d}}
-        <p>COMPUTED: {{d.computed && d.computed.map(c => c.description).join(',')}}</p>
-      </li>
-    </ol>
-    <input type="button" value="Add Device" @click="addDevice">
-    <p></p>
-    <textarea v-model="expression"></textarea>
-    <input type="text" v-model="deviceId">
-    <input type="button" value="Test Computed" @click="testComputed">
+    <div class="loader" v-if="loading"></div>
+    <div v-else>
+      user: {{this.session && this.session.email}} {{this.session && this.session.id}}
+      <br/>
+      <p>
+        userid: <input type="text" v-model="userId">
+        <button @click="devicesByUser">Filter</button>
+      </p>
+      {{geofences.length}} geofences:
+      <button @click="showGeofences=!showGeofences">{{showGeofences?'Hide':'Show'}}</button>
+      <button @click="selectedGeofences = geofences.map(g => g.id)">Select all</button>
+      <ol v-if="showGeofences">
+        <li v-for="d of geofences" :key="d.id" @click="toggleSelectedGeofence(d.id)"
+            :style="selectedGeofences.includes(d.id)?'background-color: yellow':''">{{d.name}} {{d.attributes}}</li>
+      </ol>
+      <input @click="removeGeofences" :value="`Delete selected (${selectedGeofences.length})`" type="button">
+      <p></p>
+      <input @click="removeDuplicated" value="Delete duplicated" type="button">
+      <p></p>
+      Add Geofence:
+      <input ref="file" type="file" @change="addGeofence">
+      <p></p>
+      {{groups.length}} groups:
+      <button @click="showGroups=!showGroups">{{showGroups?'Hide':'Show'}}</button>
+      <ol v-if="showGroups">
+        <li v-for="d of groups" :key="d.id"
+            :style="selectedGroups.includes(d.id)?'background-color: yellow':''">group {{d}}</li>
+      </ol>
+      <p></p>
+      {{devices.length}} devices:
+      <button @click="showDevices=!showDevices">{{showDevices?'Hide':'Show'}}</button>
+      <button @click="getComputed">Get Computed</button>
+      <ol v-if="showDevices">
+        <li v-for="d of devices" :key="d.id">{{d}}
+          <p>COMPUTED: {{d.computed && d.computed.map(c => c.description).join(',')}}</p>
+          <p><button @click="route(d)">Route</button></p>
+        </li>
+      </ol>
+      <input type="button" value="Add Device" @click="addDevice">
+      <p></p>
+      <textarea v-model="expression"></textarea>
+      <input type="text" v-model="deviceId">
+      <input type="button" value="Test Computed" @click="testComputed">
+    </div>
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
 import { stringify } from 'wellknown'
+// import route from '@/pages/route.json'
 
 export default {
   name: 'IndexPage',
   data () {
     return {
+      loading: false,
       deviceId: 0,
       userId: 0,
       expression: '',
@@ -127,6 +133,41 @@ export default {
       }
       reader.onerror = (err) => console.log(err)
       reader.readAsText(this.file)
+    },
+    async route (device) {
+      this.loading = true
+      // const route = require('./route.json')
+      const result = []
+      const { route } = await this.$axios.$get(`/reports/allinone?deviceId=${device.id}&from=2023-09-28T23:00:00.000Z&to=2023-09-29T22:59:59.000Z&type=route`)
+      const chunk = 1000
+      for (let i = 0; i < route.length; i += chunk) {
+        const apiKey = process.env.geoapifyKey
+        const { features } = await this.$axios.$post(`https://api.geoapify.com/v1/mapmatching?apiKey=${apiKey}`, {
+          mode: 'drive',
+          waypoints: route.slice(i, i + chunk).map(p => ({ timestamp: p.fixTime, location: [p.longitude, p.latitude] }))
+        })
+        // const { features } = require('./data.json')
+        const { properties } = features[0]
+        console.log('steps.length', properties.legs[0].steps.length)
+        for (const wp of properties.waypoints) {
+          const leg = properties.legs[wp.leg_index]
+          if (!leg) {
+            console.log('ignoring legs (count):', properties.legs.count, wp.leg_index)
+            continue
+          }
+          const step = leg.steps[wp.step_index]
+          const position = route[wp.original_index]
+          if (!step) {
+            console.log('ignoring', wp.step_index, wp.leg_index, properties.legs[0].steps[wp.step_index], properties.legs[0].steps.length)
+            continue
+          }
+          if (wp.match_type !== 'unmatched' && step.speed_limit < position.speed * 1.852) {
+            result.push({ ...wp, ...step, ...position })
+          }
+        }
+      }
+      console.log('result', result.filter(r => r.speed_limit > 40))
+      this.loading = false
     }
   },
   async mounted () {
@@ -134,3 +175,19 @@ export default {
   }
 }
 </script>
+
+<style>
+.loader {
+  border: 16px solid #f3f3f3; /* Light grey */
+  border-top: 16px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
