@@ -32,6 +32,7 @@
       {{devices.length}} devices:
       <button @click="showDevices=!showDevices">{{showDevices?'Hide':'Show'}}</button>
       <button @click="getComputed">Get Computed</button>
+      <p><input type="date" v-model="date"></p>
       <ol v-if="showDevices">
         <li v-for="d of devices" :key="d.id">{{d}}
           <p>COMPUTED: {{d.computed && d.computed.map(c => c.description).join(',')}}</p>
@@ -56,6 +57,7 @@ export default {
   name: 'IndexPage',
   data () {
     return {
+      date: new Date().toISOString(),
       loading: false,
       deviceId: 0,
       userId: 0,
@@ -138,7 +140,9 @@ export default {
       this.loading = true
       // const route = require('./route.json')
       const result = []
-      const { route } = await this.$axios.$get(`/reports/allinone?deviceId=${device.id}&from=2023-09-28T23:00:00.000Z&to=2023-09-29T22:59:59.000Z&type=route`)
+      const from = new Date(this.date).toISOString()
+      const to = new Date(new Date(this.date).getTime() + 1000 * 60 * 60 * 24).toISOString()
+      const { route } = await this.$axios.$get(`/reports/allinone?deviceId=${device.id}&from=${from}&to=${to}&type=route&type=trips`)
       const chunk = 1000
       for (let i = 0; i < route.length; i += chunk) {
         const apiKey = process.env.geoapifyKey
