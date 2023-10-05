@@ -173,7 +173,7 @@ export default {
             continue
           }
           const step = leg.steps[wp.step_index]
-          const position = route[wp.original_index]
+          const position = route[wp.original_index + i]
           if (!step) {
             console.log('ignoring', wp.step_index, wp.leg_index, properties.legs[0].steps[wp.step_index], properties.legs[0].steps.length)
             continue
