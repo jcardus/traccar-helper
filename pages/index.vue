@@ -32,11 +32,12 @@
       {{devices.length}} devices:
       <button @click="showDevices=!showDevices">{{showDevices?'Hide':'Show'}}</button>
       <button @click="getComputed">Get Computed</button>
-      <p><input type="date" v-model="date"></p>
+      <p><input type="datetime-local" v-model="from"></p>
+      <p><input type="datetime-local" v-model="to"></p>
       <ol v-if="showDevices">
-        <li v-for="d of devices" :key="d.id">{{d}}
-          <p>COMPUTED: {{d.computed && d.computed.map(c => c.description).join(',')}}</p>
-          <p><button @click="route(d)">Route</button></p>
+        <li v-for="d of devices" :key="d.id">{{d.name}}
+          <p v-if="d.computed">COMPUTED: {{d.computed && d.computed.map(c => c.description).join(',')}}</p>
+          <button @click="route(d)">Route</button>
         </li>
       </ol>
       <input type="button" value="Add Device" @click="addDevice">
@@ -51,13 +52,15 @@
 <script>
 import { mapGetters } from 'vuex'
 import { stringify } from 'wellknown'
+import { lineString } from '@turf/helpers'
 // import route from '@/pages/route.json'
 
 export default {
   name: 'IndexPage',
   data () {
     return {
-      date: new Date().toISOString(),
+      from: new Date().toISOString(),
+      to: new Date().toISOString(),
       loading: false,
       deviceId: 0,
       userId: 0,
@@ -140,18 +143,28 @@ export default {
       this.loading = true
       // const route = require('./route.json')
       const result = []
-      const from = new Date(this.date).toISOString()
-      const to = new Date(new Date(this.date).getTime() + 1000 * 60 * 60 * 24).toISOString()
+      const from = new Date(this.from).toISOString()
+      const to = new Date(this.to).toISOString()
       const { route } = await this.$axios.$get(`/reports/allinone?deviceId=${device.id}&from=${from}&to=${to}&type=route&type=trips`)
       const chunk = 1000
       for (let i = 0; i < route.length; i += chunk) {
         const apiKey = process.env.geoapifyKey
+        const slice = route.slice(i, i + chunk)
+        window.open('http://geojson.io/#data=data:application/json,' +
+          encodeURIComponent(JSON.stringify(lineString(slice.map(p => [p.longitude, p.latitude])))))
         const { features } = await this.$axios.$post(`https://api.geoapify.com/v1/mapmatching?apiKey=${apiKey}`, {
           mode: 'drive',
-          waypoints: route.slice(i, i + chunk).map(p => ({ timestamp: p.fixTime, location: [p.longitude, p.latitude] }))
+          waypoints: slice.map(p => ({
+            timestamp: p.fixTime,
+            bearing: p.bearing,
+            location: [p.longitude, p.latitude]
+          }))
         })
+
         // const { features } = require('./data.json')
         const { properties } = features[0]
+        window.open('http://geojson.io/#data=data:application/json,' +
+          encodeURIComponent(JSON.stringify(features[0])))
         console.log('steps.length', properties.legs[0].steps.length)
         for (const wp of properties.waypoints) {
           const leg = properties.legs[wp.leg_index]

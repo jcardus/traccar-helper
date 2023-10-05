@@ -48,7 +48,7 @@ export const mutations = {
     state.session = session
   },
   SET_DEVICES (state, devices) {
-    state.devices = devices
+    state.devices = devices.sort((a, b) => a.name.localeCompare(b.name))
   },
   SET_GROUPS (state, groups) {
     state.groups = groups
