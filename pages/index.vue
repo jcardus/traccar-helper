@@ -161,11 +161,9 @@ export default {
           }))
         })
 
-        // const { features } = require('./data.json')
         const { properties } = features[0]
         window.open('http://geojson.io/#data=data:application/json,' +
           encodeURIComponent(JSON.stringify(features[0])))
-        console.log('steps.length', properties.legs[0].steps.length)
         for (const wp of properties.waypoints) {
           const leg = properties.legs[wp.leg_index]
           if (!leg) {
