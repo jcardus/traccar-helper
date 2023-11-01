@@ -11,7 +11,7 @@
     <button @click="selectedGeofences = geofences.map(g => g.id)">Select all</button>
     <ol v-if="showGeofences">
       <li v-for="d of geofences" :key="d.id" @click="toggleSelectedGeofence(d.id)"
-          :style="selectedGeofences.includes(d.id)?'background-color: yellow':''">{{d.name}} {{d.attributes}}</li>
+          :style="selectedGeofences.includes(d.id)?'background-color: yellow':''">{{d.name}} {{d.attributes}} {{d.area}}</li>
     </ol>
     <input @click="removeGeofences" :value="`Delete selected (${selectedGeofences.length})`" type="button">
     <p></p>
@@ -166,7 +166,8 @@ export default {
               this.inserted++
             } else {
               if (area !== geofence.area) {
-                await this.$store.dispatch('updateGeofence', geofence)
+                console.log(area, geofence.area)
+                await this.$store.dispatch('updateGeofence', { ...geofence, area })
                 this.log = `updated ${geofence.name}`
                 this.updated++
               } else {
