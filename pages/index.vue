@@ -166,7 +166,7 @@ export default {
               this.inserted++
             } else {
               if (area !== geofence.area) {
-                await this.$store.dispatch('updateGeofence', geofence.id)
+                await this.$store.dispatch('updateGeofence', geofence)
                 this.log = `updated ${geofence.name}`
                 this.updated++
               } else {
@@ -177,7 +177,7 @@ export default {
           } catch (e) {
             console.error(e)
             this.error++
-            this.lastError += `${line}\n`
+            this.lastError += `${line} -> ${(e.response && e.response.data) || e.message}`
           }
         }
       }
