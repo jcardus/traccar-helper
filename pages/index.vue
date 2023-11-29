@@ -165,7 +165,7 @@ export default {
               this.log = 'inserted'
               this.inserted++
             } else {
-              if (area !== geofence.area) {
+              if (area.split(',')[0] !== geofence.area.split(',')[0]) {
                 console.log(area, geofence.area)
                 await this.$store.dispatch('updateGeofence', { ...geofence, area })
                 this.log = `updated ${geofence.name}`
