@@ -2,14 +2,16 @@ export const state = {
   session: null,
   devices: [],
   geofences: [],
-  groups: []
+  groups: [],
+  loading: true
 }
 
 export const getters = {
   session: (state) => state.session,
   geofences: (state) => state.geofences,
   groups: (state) => state.groups,
-  devices: (state) => state.devices
+  devices: (state) => state.devices,
+  loading: (state) => state.loading
 }
 
 export const actions = {
@@ -30,10 +32,12 @@ export const actions = {
     commit('SET_DEVICES', await this.$axios.$get('devices' + (userId ? `?userId=${userId}` : '')))
   },
   async getUserData ({ commit, dispatch }) {
+    commit('SET_LOADING', true)
     await dispatch('getDevices')
     commit('SET_SESSION', await this.$axios.$get('session'))
     commit('SET_GEOFENCES', await this.$axios.$get('geofences'))
     commit('SET_GROUPS', await this.$axios.$get('groups'))
+    commit('SET_LOADING', false)
   },
   async getComputed ({ commit, state }) {
     for (const d of state.devices) {
@@ -57,5 +61,8 @@ export const mutations = {
   },
   SET_GEOFENCES (state, geofences) {
     state.geofences = geofences.sort((a, b) => a.name.localeCompare(b.name))
+  },
+  SET_LOADING (state, loading) {
+    state.loading = loading
   }
 }

@@ -1,5 +1,7 @@
 <template>
   <div>
+    <div id="loader" v-if="loading"></div>
+    <div>
     user: {{this.session && this.session.email}} {{this.session && this.session.id}}
     <br/>
     <p>
@@ -54,6 +56,7 @@
       error: {{error}}
     </div>
     <textarea readonly v-model="lastError" style="width: 50%; height: 100px"/>
+    </div>
   </div>
 </template>
 
@@ -85,7 +88,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['session', 'devices', 'geofences', 'groups'])
+    ...mapGetters(['session', 'devices', 'geofences', 'groups', 'loading'])
   },
   methods: {
     testComputed () {
@@ -191,3 +194,23 @@ export default {
   }
 }
 </script>
+<style>
+#loader {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+  width: 120px;
+  height: 120px;
+  margin: -76px 0 0 -76px;
+  border: 16px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 16px solid #3498db;
+  -webkit-animation: spin 2s linear infinite;
+  animation: spin 2s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
