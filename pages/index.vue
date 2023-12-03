@@ -55,7 +55,7 @@
       ignored: {{ignored}}<br>
       error: {{error}}
     </div>
-    <textarea readonly v-model="lastError" style="width: 50%; height: 100px"/>
+    <textarea readonly v-model="lastError" style="width: 100%; height: 100px"/>
     </div>
   </div>
 </template>
