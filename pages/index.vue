@@ -158,6 +158,7 @@ export default {
         this.max = lines.length
         for (const line of lines) {
           this.progress++
+          if (!line.length) { continue }
           const fields = line.split(';')
           const area = `CIRCLE (${fields[2]} ${fields[3]}, 100)`
           const name = fields[0] + ' - ' + fields[1]
