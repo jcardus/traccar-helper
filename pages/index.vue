@@ -5,8 +5,6 @@
     user: {{this.session && this.session.email}} {{this.session && this.session.id}}
     <br/>
     <p>
-      userid: <input type="text" v-model="userId">
-      <button @click="devicesByUser">Filter</button>
     </p>
     {{geofences.length}} geofences:
     <button @click="showGeofences=!showGeofences">{{showGeofences?'Hide':'Show'}}</button>
@@ -42,9 +40,11 @@
     </ol>
     <input type="button" value="Add Device" @click="addDevice">
     <p></p>
-    <textarea v-model="expression"></textarea>
-    <input type="text" v-model="deviceId">
-    <input type="button" value="Test Computed" @click="testComputed">
+    <div v-if="false">
+      <textarea v-model="expression"></textarea>
+      <input type="text" v-model="deviceId">
+      <input type="button" value="Test Computed" @click="testComputed">
+    </div>
     <p>
     <progress id="progress" :value="progress" :max="max" style="width: 100%"/><br>{{progress}}/{{max}} ({{(progress/max*100).toFixed(1)}}%)
       {{log}}
