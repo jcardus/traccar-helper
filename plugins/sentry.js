@@ -5,10 +5,7 @@ Sentry.init({
   Vue,
   dsn: 'https://788eef3b9f1b6cb9dd992cb55af6408b@o4506332630810624.ingest.sentry.io/4506332665741312',
   integrations: [
-    new Sentry.BrowserTracing({
-      // Set 'tracePropagationTargets' to control for which URLs distributed tracing should be enabled
-      tracePropagationTargets: ['localhost', /^https:\/\/api\.pinme\.io\/api/]
-    }),
+    new Sentry.BrowserTracing(),
     new Sentry.Replay()
   ],
   // Performance Monitoring
