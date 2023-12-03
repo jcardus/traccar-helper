@@ -190,7 +190,11 @@ export default {
     }
   },
   async mounted () {
-    await this.$store.dispatch('getUserData')
+    try {
+      await this.$store.dispatch('getUserData')
+    } catch (e) {
+      alert(e.message)
+    }
   }
 }
 </script>
