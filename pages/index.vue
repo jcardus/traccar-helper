@@ -1,10 +1,10 @@
 <template>
   <div>
+    <div id="loader" v-if="loading"></div>
+    <div>
     user: {{this.session && this.session.email}} {{this.session && this.session.id}}
     <br/>
     <p>
-      userid: <input type="text" v-model="userId">
-      <button @click="devicesByUser">Filter</button>
     </p>
     {{geofences.length}} geofences:
     <button @click="showGeofences=!showGeofences">{{showGeofences?'Hide':'Show'}}</button>
@@ -40,9 +40,11 @@
     </ol>
     <input type="button" value="Add Device" @click="addDevice">
     <p></p>
-    <textarea v-model="expression"></textarea>
-    <input type="text" v-model="deviceId">
-    <input type="button" value="Test Computed" @click="testComputed">
+    <div v-if="false">
+      <textarea v-model="expression"></textarea>
+      <input type="text" v-model="deviceId">
+      <input type="button" value="Test Computed" @click="testComputed">
+    </div>
     <p>
     <progress id="progress" :value="progress" :max="max" style="width: 100%"/><br>{{progress}}/{{max}} ({{(progress/max*100).toFixed(1)}}%)
       {{log}}
@@ -53,9 +55,8 @@
       ignored: {{ignored}}<br>
       error: {{error}}
     </div>
-    <textarea readonly v-model="lastError" style="width: 50%; height: 100px"/>
-    <vue-mermaid-string v-if="graph" :value="graph" :options="{ maxTextSize: 10000000000000 }" >
-    </vue-mermaid-string>
+    <textarea readonly v-model="lastError" style="width: 100%; height: 100px"/>
+    </div>
   </div>
 </template>
 
@@ -67,7 +68,6 @@ export default {
   name: 'IndexPage',
   data () {
     return {
-      graph: '',
       lastError: '',
       error: 0,
       max: 0,
@@ -88,26 +88,9 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['session', 'devices', 'geofences', 'groups', 'users'])
+    ...mapGetters(['session', 'devices', 'geofences', 'groups', 'loading'])
   },
   methods: {
-    safeName (name) {
-      return name.replace(/[()]/g, '')
-    },
-    async getGraph () {
-      this.devices.forEach(d => { d.group = this.groups.find(g => g.id === d.groupId) })
-      const devices = this.devices.filter(d => d.group && d.group.name).map(d => `${d.id}[${this.safeName(d.name)}] --> ${d.group.id}([${
-        this.safeName(d.group.name)}])`)
-      for (const u of this.users) {
-        u.groups = await this.$axios.$get('groups?userId=' + u.id)
-        u.devices = await this.$axios.$get('devices?userId=' + u.id)
-      }
-      const userGroups = this.users.map(u => u.groups.map(g => `${g.id}([${this.safeName(g.name)}]) --- ${u.id}((${u.name}))`)).flat()
-      const userDevices = this.users.filter(u => u.id !== this.session.id).map(u => u.devices.map(d => `${d.id}[${this.safeName(d.name)}] --- ${u.id}((${u.name}))`)).flat()
-      const r = `flowchart LR\n\t${devices.join('\n\t')}\n\t${userGroups.join('\n\t')}\n\t${userDevices.join('\n\t')}`
-      console.log(r)
-      return r
-    },
     testComputed () {
       this.$axios.$post('attributes/computed/test?deviceId=' + this.deviceId, { expression: this.expression, type: 'string' })
     },
@@ -175,6 +158,7 @@ export default {
         this.max = lines.length
         for (const line of lines) {
           this.progress++
+          if (!line.length) { continue }
           const fields = line.split(';')
           const area = `CIRCLE (${fields[2]} ${fields[3]}, 100)`
           const name = fields[0] + ' - ' + fields[1]
@@ -185,7 +169,7 @@ export default {
               this.log = 'inserted'
               this.inserted++
             } else {
-              if (area !== geofence.area) {
+              if (area.split(',')[0] !== geofence.area.split(',')[0]) {
                 console.log(area, geofence.area)
                 await this.$store.dispatch('updateGeofence', { ...geofence, area })
                 this.log = `updated ${geofence.name}`
@@ -207,8 +191,31 @@ export default {
     }
   },
   async mounted () {
-    await this.$store.dispatch('getUserData')
-    this.graph = await this.getGraph()
+    try {
+      await this.$store.dispatch('getUserData')
+    } catch (e) {
+      alert(e.message)
+    }
   }
 }
 </script>
+<style>
+#loader {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+  width: 120px;
+  height: 120px;
+  margin: -76px 0 0 -76px;
+  border: 16px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 16px solid #3498db;
+  -webkit-animation: spin 2s linear infinite;
+  animation: spin 2s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
