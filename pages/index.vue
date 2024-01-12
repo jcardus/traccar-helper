@@ -111,9 +111,12 @@ export default {
       this.$store.dispatch('addDevice', prompt('Device name?'))
     },
     async removeGeofences () {
+      this.$store.commit('SET_LOADING', true)
       for (const g of this.selectedGeofences) {
         await this.$store.dispatch('removeGeofence', g)
       }
+      await this.$store.dispatch('getUserData', this.userId)
+      this.$store.commit('SET_LOADING', false)
     },
     async removeDuplicated () {
       const toRemove = []
@@ -133,18 +136,35 @@ export default {
       this.file = this.$refs.file.files[0]
       const reader = new FileReader()
       reader.onload = async (res) => {
-        const content = JSON.parse(res.target.result)
-        for (const feature of content.features) {
-          let area
-          if (feature.geometry.type === 'Point') {
-            area = `CIRCLE (${feature.geometry.coordinates[1].toFixed(6)} ${feature.geometry.coordinates[0].toFixed(6)}, 100)`
-          } else {
-            feature.geometry.coordinates = feature.geometry.coordinates.map(c => [c[1].toFixed(6), c[0].toFixed(6)])
-            area = stringify(feature)
+        try {
+          this.$store.commit('SET_LOADING', true)
+          const content = JSON.parse(res.target.result)
+          for (const feature of content.features) {
+            let area
+            switch (feature.geometry.type) {
+              case 'Point':
+                area = `CIRCLE (${feature.geometry.coordinates[1].toFixed(6)} ${feature.geometry.coordinates[0].toFixed(6)}, 100)`
+                break
+              case 'LineString':
+                feature.geometry.coordinates = feature.geometry.coordinates.map(c => [c[1].toFixed(6), c[0].toFixed(6)])
+                area = stringify(feature)
+                break
+              case 'Polygon':
+                feature.geometry.coordinates[0] = feature.geometry.coordinates[0].reverse().map(c => [c[1].toFixed(6), c[0].toFixed(6)])
+                area = stringify(feature)
+                break
+              default:
+                area = stringify(feature)
+                alert(`Can not handle ${feature.geometry.type}, coordinates were not flipped.`)
+            }
+            await this.$store.dispatch('addGeofence', { name, area })
           }
-          console.log(area)
-          await this.$store.dispatch('addGeofence', { name, area })
+        } catch (e) {
+          console.error(e)
+          alert(e.message)
         }
+        this.$store.commit('SET_LOADING', false)
+        alert(`${name} inserted!`)
       }
       reader.onerror = (err) => console.log(err)
       reader.readAsText(this.file)
