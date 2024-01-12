@@ -18,7 +18,7 @@
     <input @click="removeDuplicated" value="Delete duplicated" type="button">
     <p></p>
     Add Geofence from GeoJSON:
-    <input ref="file" type="file" @change="addGeofence">
+    <input ref="file" type="file" @change="addGeofence"><input type="checkbox" id="flip" v-model="flip"><label for="flip">Flip coordinates</label><br>
     <p></p>
     Add Geofences from CSV:
     <input ref="csv" type="file" @change="addGeofencesFromCSV">
@@ -68,6 +68,7 @@ export default {
   name: 'IndexPage',
   data () {
     return {
+      flip: true,
       lastError: '',
       error: 0,
       max: 0,
@@ -100,9 +101,6 @@ export default {
       } else {
         this.selectedGeofences.push(g)
       }
-    },
-    devicesByUser () {
-      this.$store.dispatch('getDevices', this.userId)
     },
     getComputed () {
       this.$store.dispatch('getComputed')
@@ -143,28 +141,32 @@ export default {
             let area
             switch (feature.geometry.type) {
               case 'Point':
-                area = `CIRCLE (${feature.geometry.coordinates[1].toFixed(6)} ${feature.geometry.coordinates[0].toFixed(6)}, 100)`
+                area = `CIRCLE (${feature.geometry.coordinates[this.flip ? 1 : 0].toFixed(6)} ${feature.geometry.coordinates[this.flip ? 0 : 1].toFixed(6)}, 100)`
                 break
               case 'LineString':
-                feature.geometry.coordinates = feature.geometry.coordinates.map(c => [c[1].toFixed(6), c[0].toFixed(6)])
+                if (this.flip) {
+                  feature.geometry.coordinates = feature.geometry.coordinates.map(c => [c[1].toFixed(6), c[0].toFixed(6)])
+                }
                 area = stringify(feature)
                 break
               case 'Polygon':
-                feature.geometry.coordinates[0] = feature.geometry.coordinates[0].reverse().map(c => [c[1].toFixed(6), c[0].toFixed(6)])
-                area = stringify(feature)
+                if (this.flip) {
+                  feature.geometry.coordinates[0] = feature.geometry.coordinates[0].reverse().map(c => [c[1].toFixed(6), c[0].toFixed(6)])
+                }
+                area = stringify(feature).replace('POLYGON (', 'POLYGON(')
                 break
               default:
                 area = stringify(feature)
                 alert(`Can not handle ${feature.geometry.type}, coordinates were not flipped.`)
             }
             await this.$store.dispatch('addGeofence', { name, area })
+            alert(`${name} inserted!`)
           }
         } catch (e) {
           console.error(e)
           alert(e.message)
         }
         this.$store.commit('SET_LOADING', false)
-        alert(`${name} inserted!`)
       }
       reader.onerror = (err) => console.log(err)
       reader.readAsText(this.file)
