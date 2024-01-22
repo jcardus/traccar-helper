@@ -20,7 +20,8 @@
     Add Geofence from GeoJSON:
     <input ref="file" type="file" @change="addGeofence"><input type="checkbox" id="flip" v-model="flip"><label for="flip">Flip coordinates</label><br>
     <p></p>
-    Add Geofences from CSV:
+    Add Geofences from CSV<b>
+    format: code;name;latitude;longitude
     <input ref="csv" type="file" @change="addGeofencesFromCSV">
     <p></p>
     {{groups.length}} groups:
