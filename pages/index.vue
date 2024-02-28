@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="padding: 20px">
     <div id="loader" v-if="loading"></div>
     <div>
     user: {{this.session && this.session.email}} {{this.session && this.session.id}}
@@ -177,7 +177,7 @@ export default {
     },
     addGeofencesFromKMZ () {
 
-    }
+    },
     addGeofencesFromCSV () {
       this.file = this.$refs.csv.files[0]
       const reader = new FileReader()
@@ -223,6 +223,7 @@ export default {
     try {
       await this.$store.dispatch('getUserData')
     } catch (e) {
+      console.error(e)
       alert(e.message)
     }
   }
@@ -230,8 +231,13 @@ export default {
 </script>
 <style>
 html {
-  font-size: 200%;
+ font-size: 100%;
 }
+* {
+ font-size: 105%;
+}
+
+
 #loader {
   position: absolute;
   left: 50%;
