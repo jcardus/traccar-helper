@@ -25,7 +25,7 @@
     <input ref="csv" type="file" @change="addGeofencesFromCSV">
     <p></p>
     Add Geofences from KMZ<br>
-    <input ref="csv" type="file" @change="addGeofencesFromKMZ">
+    <input ref="kmz" type="file" @change="addGeofencesFromKMZ">
     <p></p>
     {{groups.length}} groups:
     <button @click="showGroups=!showGroups">{{showGroups?'Hide':'Show'}}</button>
@@ -67,6 +67,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { stringify } from 'wellknown'
+import kmlParser from 'js-kml-parser';
 
 export default {
   name: 'IndexPage',
@@ -176,7 +177,14 @@ export default {
       reader.readAsText(this.file)
     },
     addGeofencesFromKMZ () {
-
+      this.file = this.$refs.kmz.files[0]
+      const reader = new FileReader()
+      reader.onload = async (res) => {
+        const geoJson = kmlParser.toGeoJson(reader.result);
+        console.log(geoJson);
+      }
+      reader.onerror = (err) => console.log(err)
+      reader.readAsText(this.file)
     },
     addGeofencesFromCSV () {
       this.file = this.$refs.csv.files[0]
