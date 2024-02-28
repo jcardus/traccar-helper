@@ -20,9 +20,12 @@
     Add Geofence from GeoJSON:
     <input ref="file" type="file" @change="addGeofence"><input type="checkbox" id="flip" v-model="flip"><label for="flip">Flip coordinates</label><br>
     <p></p>
-    Add Geofences from CSV<b>
+    Add Geofences from CSV<br>
     format: code;name;latitude;longitude
     <input ref="csv" type="file" @change="addGeofencesFromCSV">
+    <p></p>
+    Add Geofences from KMZ<br>
+    <input ref="csv" type="file" @change="addGeofencesFromKMZ">
     <p></p>
     {{groups.length}} groups:
     <button @click="showGroups=!showGroups">{{showGroups?'Hide':'Show'}}</button>
@@ -172,6 +175,9 @@ export default {
       reader.onerror = (err) => console.log(err)
       reader.readAsText(this.file)
     },
+    addGeofencesFromKMZ () {
+
+    }
     addGeofencesFromCSV () {
       this.file = this.$refs.csv.files[0]
       const reader = new FileReader()
@@ -223,6 +229,9 @@ export default {
 }
 </script>
 <style>
+html {
+  font-size: 200%;
+}
 #loader {
   position: absolute;
   left: 50%;
