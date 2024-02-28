@@ -24,7 +24,7 @@
     format: code;name;latitude;longitude
     <input ref="csv" type="file" @change="addGeofencesFromCSV">
     <p></p>
-    Add Geofences from KMZ<br>
+    Add Geofences from KML<br>
     <input ref="kmz" type="file" @change="addGeofencesFromKMZ">
     <p></p>
     {{groups.length}} groups:
@@ -181,7 +181,13 @@ export default {
       const reader = new FileReader()
       reader.onload = async (res) => {
         const geoJson = kmlParser.toGeoJson(reader.result);
-        console.log(geoJson);
+        console.log(geoJson)
+        this.max = geoJson.features.length
+        for(const feature of geoJson.features) {
+          const name = feature.properties.name
+          const area = `CIRCLE (${feature.geometry.coordinates[1]} ${feature.geometry.coordinates[0]}, 100)`          
+          await this.processGeofence(name, area)
+        }
       }
       reader.onerror = (err) => console.log(err)
       reader.readAsText(this.file)
@@ -194,7 +200,6 @@ export default {
         const lines = content.split('\n')
         this.max = lines.length
         for (const line of lines) {
-          this.progress++
           if (!line.length) { continue }
           const fields = line.split(';')
           const area = `CIRCLE (${fields[2]} ${fields[3]}, 100)`
@@ -205,12 +210,13 @@ export default {
       reader.onerror = (err) => console.log(err)
       reader.readAsText(this.file)
     },
-    async processDevice (name) {
+    async processGeofence (name, area) {
+      this.progress++
      try {
             const geofence = this.geofences.find(g => g.name === name)
             if (!geofence) {
               await this.$store.dispatch('addGeofence', { name, area })
-              this.log = 'inserted'
+              this.log = 'inserted ' + name
               this.inserted++
             } else {
               if (area.split(',')[0] !== geofence.area.split(',')[0]) {
