@@ -199,7 +199,14 @@ export default {
           const fields = line.split(';')
           const area = `CIRCLE (${fields[2]} ${fields[3]}, 100)`
           const name = fields[0] + ' - ' + fields[1]
-          try {
+          await this.processGeofence(name, area)
+        }
+      }
+      reader.onerror = (err) => console.log(err)
+      reader.readAsText(this.file)
+    },
+    async processDevice (name) {
+     try {
             const geofence = this.geofences.find(g => g.name === name)
             if (!geofence) {
               await this.$store.dispatch('addGeofence', { name, area })
@@ -221,10 +228,6 @@ export default {
             this.error++
             this.lastError += `${line} -> ${(e.response && e.response.data) || e.message}`
           }
-        }
-      }
-      reader.onerror = (err) => console.log(err)
-      reader.readAsText(this.file)
     }
   },
   async mounted () {
