@@ -13,20 +13,6 @@
       <li v-for="d of geofences" :key="d.id" @click="toggleSelectedGeofence(d.id)"
           :style="selectedGeofences.includes(d.id)?'background-color: yellow':''">{{d.name}} {{d.attributes}} {{d.area}}</li>
     </ol>
-    <input @click="removeGeofences" :value="`Delete selected (${selectedGeofences.length})`" type="button">
-    <p></p>
-    <input @click="removeDuplicated" value="Delete duplicated" type="button">
-    <p></p>
-      <div>
-    Add Geofence from GeoJSON:<br>
-    <input ref="file" type="file" @change="addGeofence"><input type="checkbox" id="flip" v-model="flip"><label for="flip">Flip coordinates</label><br>
-    <p></p>
-    Add Geofences from CSV<br>
-    format: code;name;latitude;longitude<br>
-    <input ref="csv" type="file" @change="addGeofencesFromCSV">
-    <p></p>
-    Add Geofences from KML<br>
-    <input ref="kmz" type="file" @change="addGeofencesFromKMZ">
     <p></p>
     {{groups.length}} groups:
     <button @click="showGroups=!showGroups">{{showGroups?'Hide':'Show'}}</button>
@@ -35,6 +21,25 @@
           :style="selectedGroups.includes(d.id)?'background-color: yellow':''">group {{d}}</li>
     </ol>
     <p></p>
+    <input @click="removeGeofences" :value="`Delete selected (${selectedGeofences.length})`" type="button">
+    <p></p>
+    <input @click="removeDuplicated" value="Delete duplicated" type="button">
+    <p></p>
+      <div>
+        <div style="border-bottom: solid #3498db;padding: 10px">
+    Add Geofence from GeoJSON:<br>
+    <input ref="file" type="file" @change="addGeofence"><input type="checkbox" id="flip" v-model="flip"><label for="flip">Flip coordinates</label><br>
+    <p></p>
+        </div>
+        <div style="border-bottom: solid #3498db;padding: 10px">
+    Add Geofences from CSV<br>
+    format: code;name;latitude;longitude<br>
+    <input ref="csv" type="file" @change="addGeofencesFromCSV">
+    <p></p>
+          </div><div style="border-bottom: solid #3498db;padding: 10px">
+    Add Geofences from KML<br>
+    <input ref="kmz" type="file" @change="addGeofencesFromKMZ">
+    <p></p></div>
         </div>
       <div v-if="false">
     {{devices.length}} devices:
