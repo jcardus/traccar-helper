@@ -2,7 +2,7 @@
   <div style="padding: 20px">
     <div id="loader" v-if="loading"></div>
     <div>
-    user: {{this.session && this.session.email}} {{this.session && this.session.id}}
+    {{this.session && this.session.email}}
     <br/>
     <p>
     </p>
@@ -17,11 +17,12 @@
     <p></p>
     <input @click="removeDuplicated" value="Delete duplicated" type="button">
     <p></p>
-    Add Geofence from GeoJSON:
+      <div>
+    Add Geofence from GeoJSON:<br>
     <input ref="file" type="file" @change="addGeofence"><input type="checkbox" id="flip" v-model="flip"><label for="flip">Flip coordinates</label><br>
     <p></p>
     Add Geofences from CSV<br>
-    format: code;name;latitude;longitude
+    format: code;name;latitude;longitude<br>
     <input ref="csv" type="file" @change="addGeofencesFromCSV">
     <p></p>
     Add Geofences from KML<br>
@@ -34,6 +35,8 @@
           :style="selectedGroups.includes(d.id)?'background-color: yellow':''">group {{d}}</li>
     </ol>
     <p></p>
+        </div>
+      <div v-if="false">
     {{devices.length}} devices:
     <button @click="showDevices=!showDevices">{{showDevices?'Hide':'Show'}}</button>
     <button @click="getComputed">Get Computed</button>
@@ -44,6 +47,7 @@
     </ol>
     <input type="button" value="Add Device" @click="addDevice">
     <p></p>
+      </div>
     <div v-if="false">
       <textarea v-model="expression"></textarea>
       <input type="text" v-model="deviceId">
@@ -67,7 +71,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { stringify } from 'wellknown'
-import kmlParser from 'js-kml-parser';
+import kmlParser from 'js-kml-parser'
 
 export default {
   name: 'IndexPage',
@@ -180,12 +184,12 @@ export default {
       this.file = this.$refs.kmz.files[0]
       const reader = new FileReader()
       reader.onload = async (res) => {
-        const geoJson = kmlParser.toGeoJson(reader.result);
+        const geoJson = kmlParser.toGeoJson(reader.result)
         console.log(geoJson)
         this.max = geoJson.features.length
-        for(const feature of geoJson.features) {
+        for (const feature of geoJson.features) {
           const name = feature.properties.name
-          const area = `CIRCLE (${feature.geometry.coordinates[1]} ${feature.geometry.coordinates[0]}, 100)`          
+          const area = `CIRCLE (${feature.geometry.coordinates[1]} ${feature.geometry.coordinates[0]}, 100)`
           await this.processGeofence(name, area)
         }
       }
@@ -212,28 +216,28 @@ export default {
     },
     async processGeofence (name, area) {
       this.progress++
-     try {
-            const geofence = this.geofences.find(g => g.name === name)
-            if (!geofence) {
-              await this.$store.dispatch('addGeofence', { name, area })
-              this.log = 'inserted ' + name
-              this.inserted++
-            } else {
-              if (area.split(',')[0] !== geofence.area.split(',')[0]) {
-                console.log(area, geofence.area)
-                await this.$store.dispatch('updateGeofence', { ...geofence, area })
-                this.log = `updated ${geofence.name}`
-                this.updated++
-              } else {
-                this.log = `ignored ${geofence.name}`
-                this.ignored++
-              }
-            }
-          } catch (e) {
-            console.error(e)
-            this.error++
-            this.lastError += `${line} -> ${(e.response && e.response.data) || e.message}`
+      try {
+        const geofence = this.geofences.find(g => g.name === name)
+        if (!geofence) {
+          await this.$store.dispatch('addGeofence', { name, area })
+          this.log = 'inserted ' + name
+          this.inserted++
+        } else {
+          if (area.split(',')[0] !== geofence.area.split(',')[0]) {
+            console.log(area, geofence.area)
+            await this.$store.dispatch('updateGeofence', { ...geofence, area })
+            this.log = `updated ${geofence.name}`
+            this.updated++
+          } else {
+            this.log = `ignored ${geofence.name}`
+            this.ignored++
           }
+        }
+      } catch (e) {
+        console.error(e)
+        this.error++
+        this.lastError += `${line} -> ${(e.response && e.response.data) || e.message}`
+      }
     }
   },
   async mounted () {
@@ -253,7 +257,6 @@ html {
 * {
  font-size: 105%;
 }
-
 
 #loader {
   position: absolute;
