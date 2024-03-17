@@ -236,7 +236,7 @@ export default {
       } catch (e) {
         console.error(e)
         this.error++
-        this.lastError += `${line} -> ${(e.response && e.response.data) || e.message}`
+        this.lastError += `${name} -> ${(e.response && e.response.data) || e.message}`
       }
     }
   },
