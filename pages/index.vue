@@ -183,7 +183,7 @@ export default {
     addGeofencesFromKMZ () {
       this.file = this.$refs.kmz.files[0]
       const reader = new FileReader()
-      reader.onload = async (res) => {
+      reader.onload = async () => {
         const geoJson = kmlParser.toGeoJson(reader.result)
         console.log(geoJson)
         this.max = geoJson.features.length
