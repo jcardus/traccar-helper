@@ -2,6 +2,7 @@
   <div style="padding: 20px">
     <div id="loader" v-if="loading"></div>
     <div>
+      <img height="44" :src="`/img/logos/${host}.png`" alt="logo">
     {{this.session && this.session.email}}
     <br/>
     <p>
@@ -103,7 +104,8 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['session', 'devices', 'geofences', 'groups', 'loading'])
+    ...mapGetters(['session', 'devices', 'geofences', 'groups', 'loading']),
+    host: () => window.location.hostname
   },
   methods: {
     testComputed () {
