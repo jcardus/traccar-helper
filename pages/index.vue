@@ -15,14 +15,16 @@
           :style="selectedGeofences.includes(d.id)?'background-color: yellow':''">{{d.name}} {{d.attributes}} {{d.area}}</li>
     </ol>
     <p></p>
+      <div v-if="false">
     {{groups.length}} groups:
     <button @click="showGroups=!showGroups">{{showGroups?'Hide':'Show'}}</button>
     <ol v-if="showGroups">
       <li v-for="d of groups" :key="d.id"
           :style="selectedGroups.includes(d.id)?'background-color: yellow':''">group {{d}}</li>
     </ol>
+      </div>
     <p></p>
-    <input @click="removeGeofences" :value="`Delete selected (${selectedGeofences.length})`" type="button">
+    <input v-if="false" @click="removeGeofences" :value="`Delete selected (${selectedGeofences.length})`" type="button">
     <p></p>
     <input @click="removeDuplicated" value="Delete duplicated" type="button">
     <p></p>
