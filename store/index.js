@@ -15,6 +15,9 @@ export const getters = {
 }
 
 export const actions = {
+  async removeGeofences ({ commit }, geofenceIds) {
+    return this.$axios.$post('../reports/geofences/bulk/delete', geofenceIds)
+  },
   async addDevice ({ commit }, name) {
     await this.$axios.$post('devices', { name, uniqueId: name })
     commit('SET_DEVICES', await this.$axios.$get('devices'))
@@ -46,6 +49,9 @@ export const actions = {
     }
   }
 }
+
+const maxGeofences = 1000
+
 export const mutations = {
   SET_DEVICE (state, device) {
     state.devices.splice(state.devices.indexOf(device), 1, device)
@@ -62,7 +68,7 @@ export const mutations = {
   SET_GEOFENCES (state, geofences) {
     console.log(geofences)
     if (geofences && geofences.length) {
-      state.geofences = geofences.sort((a, b) => a.name.localeCompare(b.name))
+      state.geofences = geofences.sort((a, b) => a.name.localeCompare(b.name)).slice(0, maxGeofences)
     }
   },
   SET_LOADING (state, loading) {

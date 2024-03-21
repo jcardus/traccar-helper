@@ -127,17 +127,16 @@ export default {
       this.$store.dispatch('addDevice', prompt('Device name?'))
     },
     async removeGeofences () {
-      this.$store.commit('SET_LOADING', true)
-      for (const g of this.selectedGeofences) {
-        await this.$store.dispatch('removeGeofence', g)
-      }
-      await this.$store.dispatch('getUserData', this.userId)
-      this.$store.commit('SET_LOADING', false)
+      this.loading = true
+      await this.$store.dispatch('removeGeofences', this.selectedGeofences)
+      this.loading = false
     },
     async removeDuplicated () {
       const toRemove = []
       this.geofences.forEach((g, i, a) => {
         if (g !== a.find(e => e.name === g.name)) {
+          console.log(`will remove ${g.name}`)
+          this.lastError += `will remove ${g.name}`
           toRemove.push(g)
         }
       })
