@@ -24,7 +24,7 @@
     </ol>
       </div>
     <p></p>
-    <input v-if="false" @click="removeGeofences" :value="`Delete selected (${selectedGeofences.length})`" type="button">
+    <input @click="removeGeofences" :value="`Delete selected (${selectedGeofences.length})`" type="button">
     <p></p>
     <input @click="removeDuplicated" value="Delete duplicated" type="button">
     <p></p>
@@ -127,9 +127,11 @@ export default {
       this.$store.dispatch('addDevice', prompt('Device name?'))
     },
     async removeGeofences () {
-      this.loading = true
-      await this.$store.dispatch('removeGeofences', this.selectedGeofences)
-      this.loading = false
+      if (confirm('Delete ' + this.selectedGeofences.length + ' geofences?')) {
+        this.$store.commit('SET_LOADING', true)
+        await this.$store.dispatch('removeGeofences', this.selectedGeofences)
+        this.$store.commit('SET_LOADING', false)
+      }
     },
     async removeDuplicated () {
       const toRemove = []
