@@ -16,7 +16,7 @@ export const getters = {
 
 export const actions = {
   async removeGeofences ({ commit }, geofenceIds) {
-    return this.$axios.$post('../reports/geofences/bulk/delete', geofenceIds)
+    return this.$axios.$post('../pinmeapi/geofences/bulk/delete', geofenceIds)
   },
   async addDevice ({ commit }, name) {
     await this.$axios.$post('devices', { name, uniqueId: name })
