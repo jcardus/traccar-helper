@@ -225,10 +225,10 @@ export default {
         alert('Select file')
         return
       }
+      this.$store.commit('SET_LOADING', true)
       this.reset()
       const reader = new FileReader()
       reader.onload = async (res) => {
-        this.$store.commit('SET_LOADING', true)
         try {
           const content = res.target.result
           const lines = content.split('\n')
