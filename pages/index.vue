@@ -242,7 +242,7 @@ export default {
             const name = fields[0] + ' - ' + fields[1]
             await this.processGeofence(name, area, fields[2], fields[3])
           }
-          await this.$store.dispatch('finish')
+          await this.$store.dispatch('bulkInsert')
         } catch (e) {
           alert(e.message)
         }
