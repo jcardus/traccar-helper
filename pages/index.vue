@@ -38,6 +38,7 @@
     Add Geofences from CSV<br>
     format: code;name;latitude;longitude<br>
     <input ref="csv" type="file" @change="addGeofencesFromCSV">
+          <input type="submit" @click="addGeofencesFromCSV">
     <p></p>
           </div><div style="border-bottom: solid #3498db;padding: 10px">
     Add Geofences from KML<br>
@@ -206,35 +207,64 @@ export default {
       reader.onerror = (err) => console.log(err)
       reader.readAsText(this.file)
     },
+    reset () {
+      this.error = 0
+      this.inserted = 0
+      this.error = 0
+      this.max = 0
+      this.updated = 0
+      this.inserted = 0
+      this.ignored = 0
+      this.progress = 0
+      this.log = ''
+      this.lastError = ''
+    },
     addGeofencesFromCSV () {
       this.file = this.$refs.csv.files[0]
+      if (!this.file) {
+        alert('Select file')
+        return
+      }
+      this.reset()
       const reader = new FileReader()
       reader.onload = async (res) => {
-        const content = res.target.result
-        const lines = content.split('\n')
-        this.max = lines.length
-        for (const line of lines) {
-          if (!line.length) { continue }
-          const fields = line.split(';')
-          const area = `CIRCLE (${fields[2]} ${fields[3]}, 100)`
-          const name = fields[0] + ' - ' + fields[1]
-          await this.processGeofence(name, area)
+        this.$store.commit('SET_LOADING', true)
+        try {
+          const content = res.target.result
+          const lines = content.split('\n')
+          this.max = lines.length
+          for (const line of lines) {
+            if (!line.length) {
+              continue
+            }
+            const fields = line.split(';')
+            const area = `CIRCLE (${fields[2]} ${fields[3]}, 100)`
+            const name = fields[0] + ' - ' + fields[1]
+            await this.processGeofence(name, area, fields[2], fields[3])
+          }
+          await this.$store.dispatch('finish')
+        } catch (e) {
+          alert(e.message)
         }
+        this.$store.commit('SET_LOADING', false)
       }
       reader.onerror = (err) => console.log(err)
       reader.readAsText(this.file)
     },
-    async processGeofence (name, area) {
+    async processGeofence (name, area, lat, lon) {
       this.progress++
       try {
         const geofence = this.geofences.find(g => g.name === name)
-        if (!geofence) {
+        if (isNaN(parseFloat(lat)) || isNaN(parseFloat(lon))) {
+          this.error++
+          this.lastError += `Invalid latitude or longitude -> Name:${name}  latitude:${lat} longitude:${lon}\n`
+        } else if (!geofence) {
           await this.$store.dispatch('addGeofence', { name, area })
           this.log = 'inserted ' + name
           this.inserted++
         } else {
-          if (area.split(',')[0] !== geofence.area.split(',')[0]) {
-            console.log(area, geofence.area)
+          if (!this.geofences.find(g => g.area.split(',')[0] === area.split(',')[0] && g.name === name)) {
+            console.log(name, area, geofence.area)
             await this.$store.dispatch('updateGeofence', { ...geofence, area })
             this.log = `updated ${geofence.name}`
             this.updated++

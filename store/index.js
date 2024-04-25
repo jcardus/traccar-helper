@@ -14,6 +14,9 @@ export const getters = {
   loading: (state) => state.loading
 }
 
+const pendingInserts = []
+const chunkSize = 2000
+
 export const actions = {
   async removeGeofences ({ commit }, geofenceIds) {
     return this.$axios.$post('../pinmeapi/geofences/bulk/delete', geofenceIds)
@@ -22,8 +25,15 @@ export const actions = {
     await this.$axios.$post('devices', { name, uniqueId: name })
     commit('SET_DEVICES', await this.$axios.$get('devices'))
   },
-  async addGeofence ({ commit }, { name, area }) {
-    await this.$axios.$post('geofences', { name, area })
+  async addGeofence ({ commit, dispatch }, { name, area }) {
+    pendingInserts.push({ name, area })
+    if (pendingInserts.length === chunkSize) {
+      await dispatch('bulkInsert')
+    }
+  },
+  async bulkInsert () {
+    await this.$axios.$post('../pinmeapi/geofences/bulk', pendingInserts)
+    pendingInserts.length = 0
   },
   async updateGeofence ({ commit }, geofence) {
     await this.$axios.$put('geofences/' + geofence.id, geofence)

@@ -1,7 +1,7 @@
 <template>
   <div>
-    <input type="text" v-model="email">
-    <input type="password" v-model="password">
+    <input type="text" v-model="email" size="40">
+    <input type="password" v-model="password" size="40">
     <input type="button" value="GO" @click="login">
   </div>
 </template>
