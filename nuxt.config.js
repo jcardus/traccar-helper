@@ -41,7 +41,7 @@ export default {
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
     // https://go.nuxtjs.dev/axios
-    '@nuxtjs/axios'
+    '@nuxtjs/axios', '@nuxtjs/proxy'
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
@@ -53,5 +53,16 @@ export default {
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
-  }
+  },
+
+  proxy: [
+    // Proxies /foo to http://example.com/foo
+    'http://traccar-eu.fleetmap.pt/api'
+
+    // Proxies /api/books/*/**.json to http://example.com:8000
+    // 'http://example.com:8000/api/books/*/**.json',
+
+    // You can also pass more options
+    // [ 'http://example.com/foo', { ws: false } ]
+  ]
 }
