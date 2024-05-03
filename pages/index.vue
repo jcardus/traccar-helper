@@ -254,7 +254,7 @@ export default {
     async processGeofence (name, area, lat, lon) {
       this.progress++
       try {
-        const geofence = this.geofences.find(g => g.name === name)
+        const geofence = this.geofences.find(g => g && g.name === name)
         if (isNaN(parseFloat(lat)) || isNaN(parseFloat(lon))) {
           this.error++
           this.lastError += `Invalid latitude or longitude -> Name:${name}  latitude:${lat} longitude:${lon}\n`
@@ -263,7 +263,7 @@ export default {
           this.log = 'inserted ' + name
           this.inserted++
         } else {
-          if (!this.geofences.find(g => g.area.split(',')[0] === area.split(',')[0] && g.name === name)) {
+          if (!this.geofences.find(g => g && g.area.split(',')[0] === area.split(',')[0] && g.name === name)) {
             console.log(name, area, geofence.area)
             await this.$store.dispatch('updateGeofence', { ...geofence, area })
             this.log = `updated ${geofence.name}`

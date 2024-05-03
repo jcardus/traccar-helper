@@ -15,7 +15,7 @@ export const getters = {
 }
 
 const pendingInserts = []
-const chunkSize = 2000
+const chunkSize = 1000
 
 export const actions = {
   async removeGeofences ({ commit }, geofenceIds) {
