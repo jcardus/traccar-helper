@@ -70,7 +70,6 @@ export const mutations = {
     state.groups = groups
   },
   SET_GEOFENCES (state, geofences) {
-    console.log(geofences)
     if (geofences && geofences.length) {
       state.geofences = geofences.sort((a, b) => a.name.localeCompare(b.name))
     }

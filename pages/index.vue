@@ -240,6 +240,7 @@ export default {
             const fields = line.split(';')
             const area = `CIRCLE (${fields[2]} ${fields[3]}, 100)`
             const name = fields[0] + ' - ' + fields[1]
+            await new Promise(resolve => requestIdleCallback(resolve))
             await this.processGeofence(name, area, fields[2], fields[3])
           }
           await this.$store.dispatch('bulkInsert')
@@ -264,15 +265,17 @@ export default {
           this.log = 'inserted ' + name
           this.inserted++
         } else {
-          // if (!this.geofences.find(g => g && g.area && g.area.split(',')[0] === area.split(',')[0] && g.name === name)) {
-          console.log(name, area, geofence.area)
-          await this.$store.dispatch('updateGeofence', { ...geofence, area })
-          this.log = `updated ${geofence.name}`
-          this.updated++
-          // } else {
-          //   this.log = `ignored ${geofence.name}`
-          //  this.ignored++
-          // }
+          if (geofence.area && geofence.area.split(',')[0] !== area.split(',')[0]) {
+            console.log(name, area, geofence.area)
+            await this.$store.dispatch('updateGeofence', { ...geofence, area })
+            this.log = `updated ${geofence.name}`
+            this.updated++
+            this.lastError += `updated ${geofence.name}\n`
+          } else {
+            this.lastError += `ignored ${geofence.name}\n`
+            this.log = `ignored ${geofence.name}`
+            this.ignored++
+          }
         }
       } catch (e) {
         console.error(e)
