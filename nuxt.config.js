@@ -55,14 +55,14 @@ export default {
   build: {
   },
 
-  proxy: [
+  proxy: {
     // Proxies /foo to http://example.com/foo
-    'http://traccar-eu.fleetmap.pt/api'
+    '/api': 'http://traccar-eu.fleetmap.pt'
 
     // Proxies /api/books/*/**.json to http://example.com:8000
     // 'http://example.com:8000/api/books/*/**.json',
 
     // You can also pass more options
     // [ 'http://example.com/foo', { ws: false } ]
-  ]
+  }
 }
