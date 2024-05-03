@@ -259,20 +259,20 @@ export default {
           this.error++
           this.lastError += `Invalid latitude or longitude -> Name:${name}  latitude:${lat} longitude:${lon}\n`
         } else if (!geofence) {
-          this.lastError += `Inserting -> Name:${name}  area:${area}`
+          this.lastError += `Inserting -> Name:${name}  area:${area}\n`
           await this.$store.dispatch('addGeofence', { name, area })
           this.log = 'inserted ' + name
           this.inserted++
         } else {
-          if (!this.geofences.find(g => g && g.area && g.area.split(',')[0] === area.split(',')[0] && g.name === name)) {
-            console.log(name, area, geofence.area)
-            await this.$store.dispatch('updateGeofence', { ...geofence, area })
-            this.log = `updated ${geofence.name}`
-            this.updated++
-          } else {
-            this.log = `ignored ${geofence.name}`
-            this.ignored++
-          }
+          // if (!this.geofences.find(g => g && g.area && g.area.split(',')[0] === area.split(',')[0] && g.name === name)) {
+          console.log(name, area, geofence.area)
+          await this.$store.dispatch('updateGeofence', { ...geofence, area })
+          this.log = `updated ${geofence.name}`
+          this.updated++
+          // } else {
+          //   this.log = `ignored ${geofence.name}`
+          //  this.ignored++
+          // }
         }
       } catch (e) {
         console.error(e)
