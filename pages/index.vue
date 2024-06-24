@@ -201,7 +201,7 @@ export default {
         for (const feature of geoJson.features) {
           const name = feature.properties.name
           const area = `CIRCLE (${feature.geometry.coordinates[1]} ${feature.geometry.coordinates[0]}, 100)`
-          await this.processGeofence(name, area)
+          await this.processGeofence(name, area, feature.geometry.coordinates[1], feature.geometry.coordinates[0])
         }
       }
       reader.onerror = (err) => console.log(err)
