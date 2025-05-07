@@ -200,8 +200,13 @@ export default {
         this.max = geoJson.features.length
         for (const feature of geoJson.features) {
           const name = feature.properties.name
-          const area = `CIRCLE (${feature.geometry.coordinates[1]} ${feature.geometry.coordinates[0]}, 100)`
-          await this.processGeofence(name, area, feature.geometry.coordinates[1], feature.geometry.coordinates[0])
+          if (feature.geometry.type !== 'Polygon') {
+            const area = `CIRCLE (${feature.geometry.coordinates[1]} ${feature.geometry.coordinates[0]}, 100)`
+            await this.processGeofence(name, area, feature.geometry.coordinates[1], feature.geometry.coordinates[0])
+          } else {
+            const area = `POLYGON (${feature.geometry.coordinates.map(c => c[0] + ' ' + c[1]).join(',')})`
+            await this.processPolygon(name, area)
+          }
         }
       }
       reader.onerror = (err) => console.log(err)
@@ -251,6 +256,20 @@ export default {
       }
       reader.onerror = (err) => console.log(err)
       reader.readAsText(this.file)
+    },
+    async processPolygon (name, area) {
+      this.progress++
+      try {
+        console.log(name, area)
+        await this.$store.dispatch('addGeofence', { name, area })
+        await this.$store.dispatch('bulkInsert')
+        this.log = `inserted ${name}`
+        this.inserted++
+      } catch (e) {
+        console.error(e)
+        this.error++
+        this.lastError += `${name} -> ${(e.response && e.response.data) || e.message}`
+      }
     },
     async processGeofence (name, area, lat, lon) {
       this.progress++
