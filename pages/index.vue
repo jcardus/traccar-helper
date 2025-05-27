@@ -146,7 +146,7 @@ export default {
       console.log('found', toRemove.length, 'duplicates')
       for (const g of toRemove) {
         console.log('removing', g.name)
-        await this.$store.dispatch('removeGeofence', g.id)
+        await this.$store.dispatch('removeGeofences', g.id)
       }
     },
     addGeofence () {
@@ -192,11 +192,11 @@ export default {
       reader.readAsText(this.file)
     },
     addGeofencesFromKMZ () {
+      this.$store.commit('SET_LOADING', true)
       this.file = this.$refs.kmz.files[0]
       const reader = new FileReader()
       reader.onload = async () => {
         const geoJson = kmlParser.toGeoJson(reader.result)
-        console.log(geoJson)
         this.max = geoJson.features.length
         for (const feature of geoJson.features) {
           const name = feature.properties.name
@@ -208,6 +208,7 @@ export default {
             await this.processPolygon(name, area)
           }
         }
+        this.$store.commit('SET_LOADING', false)
       }
       reader.onerror = (err) => console.log(err)
       reader.readAsText(this.file)
