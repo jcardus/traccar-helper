@@ -204,7 +204,7 @@ export default {
             const area = `CIRCLE (${feature.geometry.coordinates[1]} ${feature.geometry.coordinates[0]}, 100)`
             await this.processGeofence(name, area, feature.geometry.coordinates[1], feature.geometry.coordinates[0])
           } else {
-            const area = `POLYGON((${feature.geometry.coordinates[0].map(c => c[0] + ' ' + c[1]).join(',')}))`
+            const area = `POLYGON((${feature.geometry.coordinates[0].map(c => c[1] + ' ' + c[0]).join(',')}))`
             await this.processPolygon(name, area)
           }
         }
