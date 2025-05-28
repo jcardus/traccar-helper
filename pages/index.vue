@@ -40,7 +40,17 @@
     <input ref="csv" type="file" @change="addGeofencesFromCSV">
           <input type="submit" @click="addGeofencesFromCSV">
     <p></p>
-          </div><div style="border-bottom: solid #3498db;padding: 10px">
+          </div>
+
+        <div style="border-bottom: solid #3498db;padding: 10px">
+          Add Geofences from CSV<br>
+          format: name;wkt<br>
+          <input ref="csv" type="file" @change="addGeofencesFromWKT">
+          <input type="submit" @click="addGeofencesFromWKT">
+          <p></p>
+        </div>
+
+        <div style="border-bottom: solid #3498db;padding: 10px">
     Add Geofences from KML<br>
     <input ref="kmz" type="file" @change="addGeofencesFromKMZ">
     <p></p></div>
@@ -225,6 +235,39 @@ export default {
       this.log = ''
       this.lastError = ''
     },
+    addGeofencesFromWKT () {
+      this.file = this.$refs.csv.files[0]
+      if (!this.file) {
+        alert('Select file')
+        return
+      }
+      this.$store.commit('SET_LOADING', true)
+      this.reset()
+      const reader = new FileReader()
+      reader.onload = async (res) => {
+        try {
+          const content = res.target.result
+          const lines = content.split('\n')
+          this.max = lines.length
+          for (const line of lines) {
+            if (!line.length) {
+              continue
+            }
+            const fields = line.split(';')
+            const area = fields[1]
+            const name = fields[0]
+            await new Promise(resolve => requestIdleCallback(resolve))
+            await this.processWKT(name, area)
+          }
+          await this.$store.dispatch('bulkInsert')
+        } catch (e) {
+          alert(e.message)
+        }
+        this.$store.commit('SET_LOADING', false)
+      }
+      reader.onerror = (err) => console.log(err)
+      reader.readAsText(this.file)
+    },
     addGeofencesFromCSV () {
       this.file = this.$refs.csv.files[0]
       if (!this.file) {
@@ -266,6 +309,22 @@ export default {
         await this.$store.dispatch('bulkInsert')
         this.log = `inserted ${name}`
         this.inserted++
+      } catch (e) {
+        console.error(e)
+        this.error++
+        this.lastError += `${name} -> ${(e.response && e.response.data) || e.message}`
+      }
+    },
+    async processWKT (name, area) {
+      this.progress++
+      try {
+        const geofence = this.geofences.find(g => g && g.name === name)
+        if (!geofence) {
+          this.lastError += `Inserting -> Name:${name}  area:${area}\n`
+          await this.$store.dispatch('addGeofence', { name, area })
+          this.log = 'inserted ' + name
+          this.inserted++
+        }
       } catch (e) {
         console.error(e)
         this.error++

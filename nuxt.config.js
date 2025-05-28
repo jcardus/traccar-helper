@@ -57,7 +57,7 @@ export default {
 
   proxy: {
     // Proxies /foo to http://example.com/foo
-    '/api': 'http://traccar-eu.fleetmap.pt',
+    '/api': 'https://api.pinme.io',
     '/pinmeapi': 'https://api.pinme.io'
 
     // Proxies /api/books/*/**.json to http://example.com:8000
